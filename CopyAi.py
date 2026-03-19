@@ -2,27 +2,22 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import re
 
-app = ttk.Window(themename="darkly")
-app.title("CopyAI")
-app.geometry("900x500")
+# default theme (light)
+current_theme = "flatly"
+
+app = ttk.Window(themename=current_theme)
+app.title("CopyAI - Text Cleaner")
+app.geometry("1000x600")
 
 
+# ================= FUNCTION =================
 def clean_text():
     text = input_box.get("1.0", END)
 
-    # ubah dash menjadi spasi
     text = re.sub(r'[-–—]', ' ', text)
-
-    # hapus bullet / karakter aneh
     text = re.sub(r'[•*#]', '', text)
-
-    # hapus spasi sebelum tanda baca
     text = re.sub(r'\s+([,.!?])', r'\1', text)
-
-    # rapikan line break
     text = re.sub(r'\n+', ' ', text)
-
-    # normalisasi semua spasi
     text = re.sub(r'\s+', ' ', text)
 
     text = text.strip()
@@ -37,55 +32,115 @@ def copy_text():
     app.clipboard_append(result)
 
 
-# konfigurasi grid
+def toggle_theme():
+    global current_theme
+
+    if current_theme == "flatly":
+        current_theme = "darkly"
+        theme_btn.config(text="☀️ Light Mode")
+    else:
+        current_theme = "flatly"
+        theme_btn.config(text="🌙 Dark Mode")
+
+    app.style.theme_use(current_theme)
+
+
+# ================= LAYOUT =================
 app.columnconfigure(0, weight=1)
-app.columnconfigure(1, weight=1)
 app.rowconfigure(1, weight=1)
 
+# HEADER
+header_frame = ttk.Frame(app)
+header_frame.pack(fill=X, padx=20, pady=10)
 
-# label input
-label_input = ttk.Label(app, text="Text Belum di Cleansing", font=("Segoe UI", 12))
-label_input.grid(row=0, column=0, padx=20, pady=10, sticky="w")
+title = ttk.Label(
+    header_frame,
+    text="CopyAI Text Cleaner",
+    font=("Segoe UI", 18, "bold")
+)
+title.pack(side=LEFT)
 
+# THEME BUTTON (kanan atas)
+theme_btn = ttk.Button(
+    header_frame,
+    text="🌙 Dark Mode",
+    bootstyle="outline-secondary",
+    command=toggle_theme
+)
+theme_btn.pack(side=RIGHT)
 
-# label output
-label_output = ttk.Label(app, text="Text Sudah di Cleansing", font=("Segoe UI", 12))
-label_output.grid(row=0, column=1, padx=20, pady=10, sticky="w")
+# MAIN FRAME (card feel)
+main_frame = ttk.Frame(app, padding=20, bootstyle="light")
+main_frame.pack(fill=BOTH, expand=True, padx=20, pady=10)
 
+main_frame.columnconfigure(0, weight=1)
+main_frame.columnconfigure(1, weight=1)
+main_frame.rowconfigure(1, weight=1)
 
-# textbox input
-input_box = ttk.Text(app)
-input_box.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+# LABEL
+ttk.Label(
+    main_frame,
+    text="Input Text",
+    font=("Segoe UI", 10, "bold")
+).grid(row=0, column=0, sticky="w", pady=(0, 5))
 
+ttk.Label(
+    main_frame,
+    text="Clean Result",
+    font=("Segoe UI", 10, "bold")
+).grid(row=0, column=1, sticky="w", pady=(0, 5))
 
-# textbox output
-output_box = ttk.Text(app)
-output_box.grid(row=1, column=1, padx=20, pady=10, sticky="nsew")
+# INPUT BOX
+input_frame = ttk.Frame(main_frame)
+input_frame.grid(row=1, column=0, sticky="nsew", padx=(0, 10))
 
+input_box = ttk.Text(
+    input_frame,
+    wrap="word",
+    font=("Segoe UI", 10),
+    relief="flat",
+    borderwidth=8
+)
+input_box.pack(fill=BOTH, expand=True)
 
-# frame tombol bawah
+# OUTPUT BOX
+output_frame = ttk.Frame(main_frame)
+output_frame.grid(row=1, column=1, sticky="nsew")
+
+output_box = ttk.Text(
+    output_frame,
+    wrap="word",
+    font=("Segoe UI", 10),
+    relief="flat",
+    borderwidth=8
+)
+output_box.pack(fill=BOTH, expand=True)
+
+# BUTTON FRAME (KANAN)
 button_frame = ttk.Frame(app)
-button_frame.grid(row=2, column=0, columnspan=2, pady=15, sticky="e", padx=20)
+button_frame.pack(fill=X, padx=20, pady=10)
 
+inner_btn_frame = ttk.Frame(button_frame)
+inner_btn_frame.pack(side=RIGHT)
 
-# tombol clean
+# BUTTON CLEAN (rounded feel via padding + style)
 clean_button = ttk.Button(
-    button_frame,
+    inner_btn_frame,
     text="Clean Text",
     bootstyle="primary",
+    width=15,
     command=clean_text
 )
-clean_button.pack(side=LEFT, padx=10)
+clean_button.pack(side=LEFT, padx=5)
 
-
-# tombol copy
+# BUTTON COPY
 copy_button = ttk.Button(
-    button_frame,
-    text="Copy Result",
+    inner_btn_frame,
+    text="Copy",
     bootstyle="success",
+    width=15,
     command=copy_text
 )
-copy_button.pack(side=LEFT, padx=10)
-
+copy_button.pack(side=LEFT, padx=5)
 
 app.mainloop()
